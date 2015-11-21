@@ -10,6 +10,7 @@ var gulp = require('gulp'),
 
 
 // System Specific Variables
+// TODO: This fails if config is missing. Need to have it offer to copy over and setup config.json.example if it can't find it.
 var config = require('./config.json');
 
 // Project Working Directory
@@ -58,7 +59,7 @@ gulp.task('watch', function () {
 
 });
 
-// Cass Reload
+// Css Reload
 gulp.task('css-reload', function () {
     gulp.src(assets.css)
         .pipe(livereload());
@@ -82,8 +83,9 @@ gulp.task('buildlocal', function () {
             if (res.installname) {
 
                 if (!config.wptemplate.length) {
-                    console.log(pwd);
-                    // If local wp-template directory missing, pull down from git via shallow clone.
+                    // If local wp-template directory missing from config, pull down from git via shallow clone.
+                    // TODO: This fails if directory already exists. Might want to have this cache whatever is most recent
+                    // into a local temp directory, and simply check if an update is needed each time.
                     git.clone('https://github.com/WordPress/WordPress.git', {args: '--depth 1 ./' + res.installname}, function (err) {
                         if (err) throw err;
                     });
