@@ -1,4 +1,6 @@
-# Created by .ignore support plugin (hsz.mobi)
+# Keep local config out of git repo.
+config.json
+
 ### Node template
 # Logs
 logs
