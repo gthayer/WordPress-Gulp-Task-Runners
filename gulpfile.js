@@ -14,7 +14,7 @@ var gulp = require('gulp'),
 var config = require('./config.json');
 
 // Project Working Directory
-var pwd = process.env.PWD;
+var pwd = process.env.INIT_CWD;
 
 // Asset Directory
 var assets_dir = pwd;
