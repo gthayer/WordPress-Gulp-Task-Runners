@@ -6,18 +6,38 @@ var gulp = require('gulp'),
     compass = require('gulp-compass'),
     git = require('gulp-git'),
     del = require('del'),
-    livereload = require('gulp-livereload');
+    livereload = require('gulp-livereload'),
+    fs = require('fs'),
+    rename = require('gulp-rename');
 
+// Current Working Directory
+var cwd = process.env.INIT_CWD;
+
+//Project Working Directory
+var pwd = __dirname;
 
 // System Specific Variables
 // TODO: This fails if config is missing. Need to have it offer to copy over and setup config.json.example if it can't find it.
-var config = require('./config.json');
 
-// Project Working Directory
-var pwd = process.env.INIT_CWD;
+try {
+    var config = require('./config.json');
+} catch (ex) {
+
+    var entries = {
+        localhost: cwd,
+        wptemplate: ""
+    };
+
+    var config = JSON.stringify(entries, null, '\t');
+
+    fs.writeFile('config.json', config, function (err) {
+      if (err) throw err;
+      console.log('config.json built');
+    });
+}
 
 // Asset Directory
-var assets_dir = pwd;
+var assets_dir = cwd;
 
 // Paths
 var paths = {
@@ -82,7 +102,7 @@ gulp.task('buildlocal', function () {
 
             if (res.installname) {
 
-                if (!config.wptemplate.length) {
+                if (config.wptemplate.length <= 0) {
                     // If local wp-template directory missing from config, pull down from git via shallow clone.
                     // TODO: This fails if directory already exists. Might want to have this cache whatever is most recent
                     // into a local temp directory, and simply check if an update is needed each time.
@@ -95,13 +115,13 @@ gulp.task('buildlocal', function () {
                         config.wptemplate + '/**/*',
                         '!' + config.wptemplate + '/wp-content/**/*',
                         '!' + config.wptemplate + '/wp-config.php'
-                    ]).pipe(gulp.dest(pwd));
+                    ]).pipe(gulp.dest(cwd));
                 }
 
                 //Replace wp-config with a file for your localhost database
                 gulp.src([config.wptemplate + '/wp-config.php'])
                     .pipe(replace("define('DB_NAME', 'wp-template');", "define('DB_NAME', '" + res.installname + "');"))
-                    .pipe(gulp.dest(pwd));
+                    .pipe(gulp.dest(cwd));
 
             } else {
                 //Error message if input is left blank
