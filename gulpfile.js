@@ -17,8 +17,9 @@ var cwd = process.env.INIT_CWD;
 var pwd = __dirname;
 
 // System Specific Variables
-// TODO: This fails if config is missing. Need to have it offer to copy over and setup config.json.example if it can't find it.
-
+// Builds a config file if none exist
+// TODO: As more variables are needed, build in prompts for the setup. wptemplate may be going away, 
+// as template location may not be important now that WP is grabbed through git.
 try {
     var config = require('./config.json');
 } catch (ex) {
