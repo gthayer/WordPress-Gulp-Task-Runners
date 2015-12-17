@@ -24,14 +24,14 @@ try {
     var config = require('./config.json');
 } catch (ex) {
 
-    var entries = {
+    var config = {
         localhost: cwd,
         wptemplate: ""
     };
 
-    var config = JSON.stringify(entries, null, '\t');
+    var config_log = JSON.stringify(config, null, '\t');
 
-    fs.writeFile('config.json', config, function (err) {
+    fs.writeFile('config.json', config_log, function (err) {
       if (err) throw err;
       console.log('config.json built');
     });
