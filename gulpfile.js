@@ -97,6 +97,11 @@ gulp.task('buildlocal', function () {
     gulp.src('gulpfile.js')
         .pipe(prompt.prompt({
             type: 'input',
+            name: 'giturl',
+            message: 'Git URL?'
+        })
+        .pipe(prompt.prompt({
+            type: 'input',
             name: 'installname',
             message: 'Install Name?'
         }, function (res) {
