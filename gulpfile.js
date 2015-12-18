@@ -109,6 +109,13 @@ gulp.task('buildlocal', function () {
                     // into a local temp directory, and simply check if an update is needed each time.
                     git.clone('https://github.com/WordPress/WordPress.git', {args: '--depth 1 ./' + res.installname}, function (err) {
                         if (err) throw err;
+
+                        //Delete the wp-content folder and git repo
+                        del([
+                            './' + res.installname + '/wp-content',
+                            './' + res.installname + '/.git'
+                        ]);
+
                     });
                 } else {
                     //Move files from a local template install into your current folder
