@@ -103,20 +103,15 @@ gulp.task('buildlocal', function () {
 
             if (res.installname) {
 
-                if (config.wptemplate.length <= 0) {
-                    // If local wp-template directory missing from config, pull down from git via shallow clone.
-                    // TODO: This fails if directory already exists. Might want to have this cache whatever is most recent
-                    // into a local temp directory, and simply check if an update is needed each time.
-                    git.clone('https://github.com/WordPress/WordPress.git', {args: '--depth 1 ./' + res.installname}, function (err) {
+                //Check if a local version of the WordPress repo exisits. If not, build one.
+                if( !fs.existsSync('./wordpress-template') ) {
+
+                    git.clone('https://github.com/WordPress/WordPress.git', {args: '--depth 1 ./wordpress-template'}, function (err) {
                         if (err) throw err;
                     });
+
                 } else {
-                    //Move files from a local template install into your current folder
-                    gulp.src([
-                        config.wptemplate + '/**/*',
-                        '!' + config.wptemplate + '/wp-content/**/*',
-                        '!' + config.wptemplate + '/wp-config.php'
-                    ]).pipe(gulp.dest(cwd));
+                    console.log('ERROR: WP template already exists.')
                 }
 
                 //Replace wp-config with a file for your localhost database
