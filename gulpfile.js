@@ -137,7 +137,7 @@ gulp.task( 'buildlocal', ['install-prompt', 'copytocwd'], function() {
 				throw err;
 			}
 			// TODO: Build prompt into config.json creation which grabs values for automatic wp-config creation.
-			var result = data.replace( "define('DB_NAME', 'database_name_here' );", "define('DB_NAME', '" + response.installname + "');" );
+			var result = data.replace( "define('DB_NAME', 'database_name_here');", "define('DB_NAME', '" + response.installname + "');" );
 			fs.writeFile(cwd + '/wp-config.php', result, 'utf8', function (err) {
 				if ( err ) {
 					throw err;
