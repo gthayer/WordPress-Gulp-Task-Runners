@@ -25,15 +25,14 @@ try {
 } catch (ex) {
 
     var config = {
-        localhost: cwd,
-        wptemplate: ""
+        localhost: pwd,
+        wptemplate: pwd + "/wordpress-template"
     };
 
     var config_log = JSON.stringify(config, null, '\t');
 
     fs.writeFile('config.json', config_log, function (err) {
       if (err) throw err;
-      console.log('config.json built');
     });
 }
 
@@ -89,59 +88,71 @@ gulp.task('css-reload', function () {
 // Default
 gulp.task('default', ['compass', 'watch']);
 
-/***
- * Install Wordpress into a folder, ignoring wp-content files
- */
-gulp.task('buildlocal', function () {
+var response;
 
+gulp.task('install-prompt', function(callback) {
     gulp.src('gulpfile.js')
-        .pipe(prompt.prompt({
-            type: 'input',
-            name: 'giturl',
-            message: 'Git URL?'
-        })
         .pipe(prompt.prompt({
             type: 'input',
             name: 'installname',
             message: 'Install Name?'
         }, function (res) {
 
+            response = res;
+
             if (res.installname) {
 
-                if (config.wptemplate.length <= 0) {
-                    // If local wp-template directory missing from config, pull down from git via shallow clone.
-                    // TODO: This fails if directory already exists. Might want to have this cache whatever is most recent
-                    // into a local temp directory, and simply check if an update is needed each time.
-                    git.clone('https://github.com/WordPress/WordPress.git', {args: '--depth 1 ./' + res.installname}, function (err) {
+                //Check if a local version of the WordPress repo exisits. If not, build one.
+                if( !fs.existsSync('./wordpress-template') ) {
+
+                    git.clone('https://github.com/WordPress/WordPress.git', {args: '--depth 1 ./wordpress-template'}, function (err) {
                         if (err) throw err;
-
-                        //Delete the wp-content folder and git repo
-                        del([
-                            './' + res.installname + '/wp-content',
-                            './' + res.installname + '/.git'
-                        ]);
-
+                        callback();
                     });
                 } else {
-                    //Move files from a local template install into your current folder
-                    gulp.src([
-                        config.wptemplate + '/**/*',
-                        '!' + config.wptemplate + '/wp-content/**/*',
-                        '!' + config.wptemplate + '/wp-config.php'
-                    ]).pipe(gulp.dest(cwd));
+                    callback();
                 }
-
-                //Replace wp-config with a file for your localhost database
-                gulp.src([config.wptemplate + '/wp-config.php'])
-                    .pipe(replace("define('DB_NAME', 'wp-template');", "define('DB_NAME', '" + res.installname + "');"))
-                    .pipe(gulp.dest(cwd));
 
             } else {
                 //Error message if input is left blank
                 console.log('ERROR: Please enter an install name');
+                return;
             }
-
         }));
+});
+
+gulp.task('copytocwd', ['install-prompt'], function(callback) {
+
+    //Move files from a local template install into your current folder
+    gulp.src([
+        config.wptemplate + '/**/*',
+        '!'+config.wptemplate+'/wp-content/**/**',
+        '!'+config.wptemplate+'/wp-config.php',
+    ])
+    .pipe(gulp.dest(cwd))
+    .on('end', callback);
+
+});
+
+gulp.task('buildlocal', ['install-prompt', 'copytocwd'], function() {
+
+    if ( !fs.existsSync(cwd  + '/wp-config.php') ) {
+
+        fs.readFile(cwd + '/wp-config-sample.php', 'utf8', function (err,data) {
+          if (err) {
+            return console.log(err);
+          }
+
+          //TODO: Build prompt into config.json creation which grabs values for automatic wp-config creation
+          var result = data.replace("define('DB_NAME', 'database_name_here');", "define('DB_NAME', '" + response.installname + "');");
+
+          fs.writeFile(cwd + '/wp-config.php', result, 'utf8', function (err) {
+             if (err) return console.log(err);
+          });
+        });
+
+    }
+
 });
 
 
