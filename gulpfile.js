@@ -47,17 +47,15 @@ var paths = {
 	sass: assets_dir + '/scss/',
 	css: assets_dir + '/css/',
 	js: assets_dir + '/js/',
-	img: assets_dir + '/img/',
 	templates: assets_dir + '/templates/'
 };
 
 // Asset Locations.
 var assets = {
-	templates: [paths.templates + '**/*.php'],
-	sass: [paths.sass + '**/*.scss'],
-	css: [paths.css + '**/*.css'],
-	js: [paths.js + '**/*.js'],
-	img: [paths.img + '**/**']
+	templates: [paths.templates + '**/*'],
+	sass: [paths.sass + '**/*'],
+	css: [paths.css + '**/*'],
+	js: [paths.js + '**/*'],
 };
 
 // Compass Task.
@@ -75,14 +73,15 @@ gulp.task( 'compass', function () {
 gulp.task( 'watch', function () {
 	livereload.listen();
 	gulp.watch( assets.sass, ['compass'] );
-	gulp.watch( assets.css, ['css-reload'] );
-	gulp.watch( assets.templates, ['css-reload'] );
-	gulp.watch( assets.js, ['css-reload'] );
+	gulp.watch( assets.css, ['live-reload'] );
+	gulp.watch( assets.templates, ['live-reload'] );
+	gulp.watch( assets.js, ['live-reload'] );
+	gulp.watch( cwd + '**/*.php', ['live-reload'] );
 });
 
 // CSS Reload.
-gulp.task( 'css-reload', function () {
-	gulp.src( assets.css )
+gulp.task( 'live-reload', function () {
+	gulp.src( paths.css )
 		.pipe( livereload() );
 });
 
