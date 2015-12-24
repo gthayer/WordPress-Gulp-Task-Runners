@@ -168,7 +168,7 @@ gulp.task( 'copytocwd', ['install-prompt'], function(callback) {
 
 gulp.task( 'buildlocal', ['build-config', 'install-prompt', 'copytocwd'], function() {
 	if ( ! fs.existsSync( cwd + '/wp-config.php' ) ) {
-		fs.readFile(cwd + '/wp-config-sample.php', 'utf8', function (err,data) {
+		fs.readFile( cwd + '/wp-config-sample.php', 'utf8', function ( err,data ) {
 			if ( err ) {
 				throw err;
 			}
@@ -182,9 +182,37 @@ gulp.task( 'buildlocal', ['build-config', 'install-prompt', 'copytocwd'], functi
 				}
 			});
 		});
-
 	}
 });
 
-// Live Reload Snippet
-// <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
+gulp.task( 'add-livereload', function() {
+	if ( fs.existsSync( cwd + '/header.php' ) ) {
+		fs.readFile( cwd + '/header.php', 'utf8', function ( err,data ) {
+			if ( err ) {
+				throw err;
+			}
+			var result = data.replace( "</head>", "<script>document.write('<script src=\"http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1\"></' + 'script>')</script> </head>" );
+			fs.writeFile( cwd + '/header.php', result, 'utf8', function (err) {
+				if ( err ) {
+					throw err;
+				}
+			});
+		});
+	}
+});
+
+gulp.task( 'remove-livereload', function() {
+	if ( fs.existsSync( cwd + '/header.php' ) ) {
+		fs.readFile( cwd + '/header.php', 'utf8', function ( err,data ) {
+			if ( err ) {
+				throw err;
+			}
+			var result = data.replace( "<script>document.write('<script src=\"http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1\"></' + 'script>')</script> ", "" );
+			fs.writeFile( cwd + '/header.php', result, 'utf8', function (err) {
+				if ( err ) {
+					throw err;
+				}
+			});
+		});
+	}
+});
