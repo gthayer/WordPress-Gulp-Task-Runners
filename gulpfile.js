@@ -45,11 +45,6 @@ gulp.task( 'build-config', function( callback ) {
 				type: 'input',
 				name: 'db_pass',
 				message: 'Database Password?',
-				validate: function( db_pass ){
-					if ( db_pass.length > 0 ) {
-						return true;
-					}
-				}
 			},
 			{
 				type: 'input',
