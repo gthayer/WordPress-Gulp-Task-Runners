@@ -7,9 +7,9 @@ var gulp = require( 'gulp' ),
 	compass = require( 'gulp-compass' ),
 	git = require( 'gulp-git' ),
 	del = require( 'del' ),
-	livereload = require( 'gulp-livereload' ),
 	fs = require( 'fs' ),
 	rename = require( 'gulp-rename' );
+	browserSync = require('browser-sync');
 
 // Current Working Directory.
 var cwd = process.env.INIT_CWD;
@@ -20,6 +20,22 @@ var pwd = __dirname;
 // System Variables.
 var config;
 var response;
+
+gulp.task('serve', function() {
+    browserSync.init({
+        
+        // TODO: Set proxy address dynamically
+        proxy: "http://dev/woocommerce/",
+		ghostMode: {
+			clicks: true,
+			forms: true,
+			scroll: true
+		}
+    });
+
+    gulp.watch( cwd + '**/*.php', ['live-reload']);
+
+});
 
 gulp.task( 'build-config', function( callback ) {
 	// Builds a config file if none exist.
@@ -106,7 +122,6 @@ gulp.task( 'compass', function () {
 
 // Watch Task.
 gulp.task( 'watch', function () {
-	livereload.listen();
 	gulp.watch( assets.sass, ['compass'] );
 	gulp.watch( assets.css, ['live-reload'] );
 	gulp.watch( assets.templates, ['live-reload'] );
@@ -116,12 +131,11 @@ gulp.task( 'watch', function () {
 
 // CSS Reload.
 gulp.task( 'live-reload', function () {
-	gulp.src( paths.css )
-		.pipe( livereload() );
+	browserSync.reload();
 });
 
 // Default.
-gulp.task( 'default', ['compass', 'watch'] );
+gulp.task( 'default', ['serve', 'compass', 'watch'] );
 
 gulp.task( 'install-prompt', ['build-config'], function( callback ) {
 	gulp.src( 'gulpfile.js' )
@@ -172,38 +186,6 @@ gulp.task( 'buildlocal', ['build-config', 'install-prompt', 'copytocwd'], functi
 						.replace( "define('DB_PASSWORD', 'password_here');", "define('DB_PASSWORD', '" + config.db_pass + "');" )
 						.replace( "define('DB_HOST', 'localhost');", "define('DB_HOST', '" + config.db_host + "');" );
 			fs.writeFile(cwd + '/wp-config.php', result, 'utf8', function (err) {
-				if ( err ) {
-					throw err;
-				}
-			});
-		});
-	}
-});
-
-gulp.task( 'add-livereload', function() {
-	if ( fs.existsSync( cwd + '/header.php' ) ) {
-		fs.readFile( cwd + '/header.php', 'utf8', function ( err,data ) {
-			if ( err ) {
-				throw err;
-			}
-			var result = data.replace( "</head>", "<script>document.write('<script src=\"http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1\"></' + 'script>')</script> </head>" );
-			fs.writeFile( cwd + '/header.php', result, 'utf8', function (err) {
-				if ( err ) {
-					throw err;
-				}
-			});
-		});
-	}
-});
-
-gulp.task( 'remove-livereload', function() {
-	if ( fs.existsSync( cwd + '/header.php' ) ) {
-		fs.readFile( cwd + '/header.php', 'utf8', function ( err,data ) {
-			if ( err ) {
-				throw err;
-			}
-			var result = data.replace( "<script>document.write('<script src=\"http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1\"></' + 'script>')</script> ", "" );
-			fs.writeFile( cwd + '/header.php', result, 'utf8', function (err) {
 				if ( err ) {
 					throw err;
 				}
