@@ -16,7 +16,8 @@
     "gulp-prompt": "^0.1.2",
     "gulp-replace": "^0.5.4",
     "gulp-rename": "^1.2.2",
-    "fs": "^0.0.2"
+    "fs": "^0.0.2",
+    "browser-sync": "^1.0.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
