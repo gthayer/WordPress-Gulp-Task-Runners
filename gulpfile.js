@@ -10,6 +10,7 @@ var gulp = require( 'gulp' ),
 	fs = require( 'fs' ),
 	rename = require( 'gulp-rename' );
 	browserSync = require('browser-sync');
+	WP = require('wp-cli');
 
 // Current Working Directory.
 var cwd = process.env.INIT_CWD;
@@ -150,46 +151,22 @@ gulp.task( 'install-prompt', ['build-config'], function( callback ) {
 			}
 		}, function ( res ) {
 			response = res;
-			// Check if a local version of the WordPress repo exisits. If not, build one.
-			if ( ! fs.existsSync( './wordpress-template' ) ) {
-				git.clone( 'https://github.com/WordPress/WordPress.git', {args: '--depth 1 ./wordpress-template'}, function (err) {
-					if ( err ) {
-						throw err;
-					}
-					callback();
-				});
-			} else {
-				callback();
-			}
+			callback();
 		}));
 });
 
-gulp.task( 'copytocwd', ['install-prompt'], function(callback) {
-	// Move files from a local template install into your current folder.
-	gulp.src([
-		config.wptemplate + '/**/*',
-		'!' + config.wptemplate + '/wp-content/**/**',
-		'!' + config.wptemplate + '/wp-config.php',
-	])
-	.pipe( gulp.dest( cwd ) )
-	.on( 'end', callback );
-});
-
-gulp.task( 'buildlocal', ['build-config', 'install-prompt', 'copytocwd'], function() {
-	if ( ! fs.existsSync( cwd + '/wp-config.php' ) ) {
-		fs.readFile( cwd + '/wp-config-sample.php', 'utf8', function ( err,data ) {
-			if ( err ) {
-				throw err;
-			}
-			var result = data.replace( "define('DB_NAME', 'database_name_here');", "define('DB_NAME', '" + response.installname + "');" )
-						.replace( "define('DB_USER', 'username_here');", "define('DB_USER', '" + config.db_user + "');" )
-						.replace( "define('DB_PASSWORD', 'password_here');", "define('DB_PASSWORD', '" + config.db_pass + "');" )
-						.replace( "define('DB_HOST', 'localhost');", "define('DB_HOST', '" + config.db_host + "');" );
-			fs.writeFile(cwd + '/wp-config.php', result, 'utf8', function (err) {
-				if ( err ) {
-					throw err;
-				}
+gulp.task( 'buildlocal', ['install-prompt'], function() {
+	WP.discover( {path:cwd}, function( WP ) {
+		WP.core.download( function( err,result ){ // creates a new plugin 
+			console.log( result );
+			WP.core.config( {
+				dbname: response.installname,
+				dbuser: config.db_user,
+				dbpass: config.db_pass,
+				dbhost: config.db_host
+			}, function( err,result ){ // creates a new plugin 
+				console.log( result );
 			});
 		});
-	}
+	});
 });
