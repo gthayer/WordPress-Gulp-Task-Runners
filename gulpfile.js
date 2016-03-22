@@ -8,9 +8,9 @@ var gulp = require( 'gulp' ),
 	git = require( 'gulp-git' ),
 	del = require( 'del' ),
 	fs = require( 'fs' ),
-	rename = require( 'gulp-rename' );
-	browserSync = require('browser-sync');
-	WP = require('wp-cli');
+	rename = require( 'gulp-rename' ),
+	browserSync = require('browser-sync'),
+	WP = require( 'wp-cli' );
 
 // Current Working Directory.
 var cwd = process.env.INIT_CWD;
@@ -23,19 +23,24 @@ var config;
 var response;
 
 gulp.task('serve', function() {
-    browserSync.init({
-        
-        // TODO: Set proxy address dynamically
-        proxy: "http://dev/woocommerce/",
-		ghostMode: {
-			clicks: true,
-			forms: true,
-			scroll: true
-		}
-    });
 
-    gulp.watch( cwd + '**/*.php', ['live-reload']);
+	WP.discover( {path:cwd}, function( WP ) {
+		WP.option.get( ['siteurl'], function( err,result ){
+			siteurl = result;
 
+			browserSync.init({
+				// TODO: Set proxy address dynamically
+				proxy: result,
+				ghostMode: {
+					clicks: true,
+					forms: true,
+					scroll: true
+				}
+			});
+
+			gulp.watch( cwd + '**/*.php', ['live-reload']);
+		});
+	});
 });
 
 gulp.task( 'build-config', function( callback ) {
